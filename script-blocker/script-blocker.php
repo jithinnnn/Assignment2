@@ -3,7 +3,7 @@
  * Plugin Name: Script Blocker
  * Description: Blocks scripts based on specified keywords.
  * Version: 1.0
- * Author: Your Name
+ * Author: Jithin George Jose
  */
 
 if (!defined('ABSPATH')) {
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 }
 
 function sb_add_admin_menu() {
-    add_options_page(
+    add_menu_page(
         'Script Blocker Settings',
         'Script Blocker',
         'manage_options',
@@ -67,7 +67,9 @@ function sb_keywords_field_render() {
 
 function sb_enable_blocking_field_render() {
     $options = get_option('sb_enable_blocking');
-    echo '<input type="checkbox" name="sb_enable_blocking" ' . checked(1, $options, false) . '/>';
+    ?>
+    <input type="checkbox" name="sb_enable_blocking" value="1" <?php checked(1, $options); ?> />
+    <?php
 }
 
 function sb_block_scripts($buffer) {
@@ -90,14 +92,22 @@ function sb_block_scripts($buffer) {
             '/<script\s+(.*?)type=[\'"]?text\/javascript[\'"]?(.*?)src=[\'"]?(.*?' . preg_quote($keyword) . '.*?)["\']?(.*?)>/',
             '<script $1 type="text/plain" src="$3$4>',
             $buffer
-        );
-    }
+        );     
 
+        $buffer = preg_replace(
+            '/<script\s*>(.*?' . preg_quote($keyword) . '.*?)<\/script>/is',
+            '<script type="text/plain">$1</script>',
+            $buffer
+        );
+    }   
+    var_dump('abc');
     return $buffer;
 }
+
 add_action('template_redirect', function() {
     ob_start('sb_block_scripts');
 });
+
 
 function sb_activate() {
     add_option('sb_enable_blocking', '0');
